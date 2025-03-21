@@ -1,8 +1,9 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Users, Tv, Wifi, Bath } from 'lucide-react';
+import { ArrowRight, Users, Tv, Wifi, Bath, Wind } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import ReservationDialog from '../reservation/ReservationDialog';
 
 interface RoomProps {
   image: string;
@@ -45,19 +46,24 @@ const Room: React.FC<RoomProps> = ({ image, title, description, price, capacity,
               className="inline-flex items-center bg-hotel-50 dark:bg-hotel-800 text-hotel-700 dark:text-hotel-300 text-xs px-2 py-1 rounded-md"
             >
               {feature === 'TV' && <Tv size={12} className="mr-1" />}
-              {feature === 'Wifi' && <Wifi size={12} className="mr-1" />}
+              {feature === 'Wi-Fi' && <Wifi size={12} className="mr-1" />}
               {feature === 'Banheira' && <Bath size={12} className="mr-1" />}
+              {feature === 'Ar-condicionado' && <Wind size={12} className="mr-1" />}
               {feature}
             </span>
           ))}
         </div>
         
-        <Button 
-          variant="outline" 
-          className="w-full mt-2 border-hotel-300 dark:border-hotel-700 text-hotel-800 dark:text-hotel-200 hover:bg-hotel-50 dark:hover:bg-hotel-800"
-        >
-          Ver Detalhes <ArrowRight size={16} className="ml-1" />
-        </Button>
+        <ReservationDialog
+          trigger={
+            <Button 
+              variant="outline" 
+              className="w-full mt-2 border-hotel-300 dark:border-hotel-700 text-hotel-800 dark:text-hotel-200 hover:bg-hotel-50 dark:hover:bg-hotel-800"
+            >
+              Ver Detalhes <ArrowRight size={16} className="ml-1" />
+            </Button>
+          }
+        />
       </div>
     </div>
   );
@@ -66,28 +72,36 @@ const Room: React.FC<RoomProps> = ({ image, title, description, price, capacity,
 const RoomsSection: React.FC = () => {
   const rooms = [
     {
-      image: "https://images.unsplash.com/photo-1618773928121-c32242e63f39?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80",
-      title: "Quarto Deluxe",
-      description: "Quarto espaçoso com decoração sofisticada e vista para o jardim.",
-      price: 450,
+      image: "https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80",
+      title: "Solteiro",
+      description: "Quarto confortável com cama de solteiro e banheiro privativo.",
+      price: 110,
+      capacity: 1,
+      features: ["Wi-Fi", "TV", "Frigobar"]
+    },
+    {
+      image: "https://images.unsplash.com/photo-1631049035182-249067d7618e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80",
+      title: "Solteiro com Ar Condicionado",
+      description: "Quarto individual com ar-condicionado e janela com vista para o jardim.",
+      price: 150,
+      capacity: 1,
+      features: ["Wi-Fi", "TV", "Frigobar", "Ar-condicionado"]
+    },
+    {
+      image: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1174&q=80",
+      title: "Casal",
+      description: "Quarto espaçoso com cama de casal e amenidades para um casal.",
+      price: 190,
       capacity: 2,
-      features: ["Wi-Fi", "TV 4K", "Frigobar", "Ar-condicionado"]
+      features: ["Wi-Fi", "TV", "Frigobar", "Chuveiro duplo"]
     },
     {
       image: "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80",
-      title: "Suíte Premium",
-      description: "Suíte com sala de estar separada e vista panorâmica para o mar.",
-      price: 680,
-      capacity: 3,
-      features: ["Wi-Fi", "TV 4K", "Minibar", "Banheira"]
-    },
-    {
-      image: "https://images.unsplash.com/photo-1590490360182-c33d57733427?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1174&q=80",
-      title: "Suíte Executiva",
-      description: "Acomodação ampla com área de trabalho e amenidades exclusivas.",
-      price: 850,
-      capacity: 4,
-      features: ["Wi-Fi", "Área de trabalho", "Cofre", "Chuveiro duplo"]
+      title: "Casal com Ar Condicionado",
+      description: "Quarto de casal premium com ar-condicionado e vista panorâmica.",
+      price: 220,
+      capacity: 2,
+      features: ["Wi-Fi", "TV 4K", "Minibar", "Ar-condicionado"]
     },
   ];
 
@@ -103,15 +117,19 @@ const RoomsSection: React.FC = () => {
               Escolha entre nossos quartos e suítes cuidadosamente decorados para uma estadia perfeita.
             </p>
           </div>
-          <Button 
-            className="mt-4 md:mt-0 bg-hotel-800 hover:bg-hotel-700 text-white animate-fade-up opacity-0"
-            style={{ animationDelay: '0.2s' }}
-          >
-            Ver Todas as Acomodações <ArrowRight size={16} className="ml-1" />
-          </Button>
+          <ReservationDialog
+            trigger={
+              <Button 
+                className="mt-4 md:mt-0 bg-hotel-800 hover:bg-hotel-700 text-white animate-fade-up opacity-0"
+                style={{ animationDelay: '0.2s' }}
+              >
+                Ver Todas as Acomodações <ArrowRight size={16} className="ml-1" />
+              </Button>
+            }
+          />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {rooms.map((room, index) => (
             <Room 
               key={index}

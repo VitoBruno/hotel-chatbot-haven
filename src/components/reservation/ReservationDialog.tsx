@@ -150,9 +150,10 @@ const ReservationDialog: React.FC<ReservationDialogProps> = ({ trigger }) => {
                 <SelectValue placeholder="Selecione o tipo de quarto" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="standard">Quarto Standard</SelectItem>
-                <SelectItem value="deluxe">Quarto Deluxe</SelectItem>
-                <SelectItem value="suite-executiva">Suíte Executiva</SelectItem>
+                <SelectItem value="solteiro">Solteiro (R$110)</SelectItem>
+                <SelectItem value="solteiro-ar">Solteiro com Ar Condicionado (R$150)</SelectItem>
+                <SelectItem value="casal">Casal (R$190)</SelectItem>
+                <SelectItem value="casal-ar">Casal com Ar Condicionado (R$220)</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -168,8 +169,6 @@ const ReservationDialog: React.FC<ReservationDialogProps> = ({ trigger }) => {
                 <SelectContent>
                   <SelectItem value="1">1 Adulto</SelectItem>
                   <SelectItem value="2">2 Adultos</SelectItem>
-                  <SelectItem value="3">3 Adultos</SelectItem>
-                  <SelectItem value="4">4 Adultos</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -184,7 +183,6 @@ const ReservationDialog: React.FC<ReservationDialogProps> = ({ trigger }) => {
                   <SelectItem value="0">0 Crianças</SelectItem>
                   <SelectItem value="1">1 Criança</SelectItem>
                   <SelectItem value="2">2 Crianças</SelectItem>
-                  <SelectItem value="3">3 Crianças</SelectItem>
                 </SelectContent>
               </Select>
             </div>
