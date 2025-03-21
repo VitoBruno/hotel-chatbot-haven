@@ -1,25 +1,10 @@
 
 import React, { useState, useEffect } from "react";
-import { NavLink, Link } from "react-router-dom";
-import { Menu, X, ChevronDown, Sun, Moon } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Menu, X, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import ReservationDialog from "@/components/reservation/ReservationDialog";
-
-interface NavLinkItem {
-  label: string;
-  href: string;
-  children?: NavLinkItem[];
-}
-
-const navigationLinks: NavLinkItem[] = [
-  { label: "Início", href: "/" },
-  { label: "Acomodações", href: "/acomodacoes" },
-  { label: "Serviços", href: "/servicos" },
-  { label: "Galeria", href: "/galeria" },
-  { label: "Ofertas", href: "/ofertas" },
-  { label: "Contato", href: "/contato" },
-];
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -62,26 +47,6 @@ const Header = () => {
             <span className="absolute -bottom-1 left-0 w-full h-px bg-gradient-to-r from-transparent via-hotel-400/40 to-transparent"></span>
           </Link>
 
-          <div className="hidden md:flex items-center space-x-1">
-            {navigationLinks.map((item) => (
-              <NavLink
-                key={item.label}
-                to={item.href}
-                className={({ isActive }) =>
-                  cn(
-                    "px-4 py-2 text-sm font-medium rounded-md transition-all relative group",
-                    isActive
-                      ? "text-hotel-800 dark:text-hotel-200"
-                      : "text-hotel-600 hover:text-hotel-800 dark:text-hotel-300 dark:hover:text-hotel-100"
-                  )
-                }
-              >
-                {item.label}
-                <span className="absolute bottom-0 left-1/2 w-0 h-0.5 bg-hotel-500 group-hover:w-1/2 group-hover:left-1/4 transition-all duration-300"></span>
-              </NavLink>
-            ))}
-          </div>
-
           <div className="hidden md:flex items-center space-x-4">
             <button 
               onClick={toggleTheme} 
@@ -114,24 +79,6 @@ const Header = () => {
         )}
       >
         <div className="flex flex-col items-center justify-center h-full space-y-8 p-4 animate-stagger">
-          {navigationLinks.map((item) => (
-            <NavLink
-              key={item.label}
-              to={item.href}
-              onClick={() => setIsOpen(false)}
-              className={({ isActive }) =>
-                cn(
-                  "text-2xl font-medium transition-all relative animate-fade-up opacity-0",
-                  isActive
-                    ? "text-hotel-800 dark:text-hotel-200"
-                    : "text-hotel-600 dark:text-hotel-300"
-                )
-              }
-            >
-              {item.label}
-            </NavLink>
-          ))}
-          
           <div className="flex flex-col items-center space-y-4 animate-fade-up opacity-0 pt-6">
             <button 
               onClick={toggleTheme} 

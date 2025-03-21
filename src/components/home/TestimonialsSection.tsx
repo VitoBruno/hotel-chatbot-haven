@@ -1,7 +1,11 @@
 
 import React, { useState } from 'react';
-import { Star, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Star, ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { toast } from '@/components/ui/use-toast';
 
 interface TestimonialProps {
   quote: string;
@@ -35,8 +39,99 @@ const testimonials: TestimonialProps[] = [
   },
 ];
 
+const ReviewForm = ({ onClose }: { onClose: () => void }) => {
+  const [review, setReview] = useState('');
+  const [name, setName] = useState('');
+  const [location, setLocation] = useState('');
+  const [rating, setRating] = useState(5);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!review || !name) {
+      toast({
+        title: "Campos obrigatórios",
+        description: "Por favor, preencha seu nome e sua avaliação.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // In a real application, this would send the review to a backend
+    toast({
+      title: "Avaliação enviada!",
+      description: "Obrigado por compartilhar sua experiência conosco.",
+    });
+    
+    onClose();
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label htmlFor="rating" className="block text-sm font-medium mb-1">Avaliação</label>
+        <div className="flex space-x-1">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <button
+              key={star}
+              type="button"
+              onClick={() => setRating(star)}
+              className="focus:outline-none"
+            >
+              <Star 
+                size={24} 
+                className={star <= rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"} 
+              />
+            </button>
+          ))}
+        </div>
+      </div>
+      
+      <div>
+        <label htmlFor="name" className="block text-sm font-medium mb-1">Seu Nome*</label>
+        <input
+          id="name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+          required
+        />
+      </div>
+      
+      <div>
+        <label htmlFor="location" className="block text-sm font-medium mb-1">Localização</label>
+        <input
+          id="location"
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+          placeholder="Cidade, País"
+        />
+      </div>
+      
+      <div>
+        <label htmlFor="review" className="block text-sm font-medium mb-1">Sua Avaliação*</label>
+        <Textarea
+          id="review"
+          value={review}
+          onChange={(e) => setReview(e.target.value)}
+          className="w-full"
+          rows={5}
+          required
+        />
+      </div>
+      
+      <div className="flex justify-end space-x-2 pt-2">
+        <Button variant="outline" type="button" onClick={onClose}>Cancelar</Button>
+        <Button type="submit">Enviar Avaliação</Button>
+      </div>
+    </form>
+  );
+};
+
 const TestimonialsSection: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isReviewOpen, setIsReviewOpen] = useState(false);
 
   const goToPrevious = () => {
     setCurrentIndex((prevIndex) => 
@@ -69,9 +164,30 @@ const TestimonialsSection: React.FC = () => {
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             O Que Dizem Nossos Hóspedes
           </h2>
-          <p className="text-hotel-300 max-w-xl mx-auto">
-            Experiências autênticas compartilhadas por quem vivenciou a hospitalidade do Serenity Hotel.
+          <p className="text-hotel-300 max-w-xl mx-auto mb-8">
+            Experiências autênticas compartilhadas por quem vivenciou a hospitalidade do Hotel Vitória.
           </p>
+          
+          <Dialog open={isReviewOpen} onOpenChange={setIsReviewOpen}>
+            <DialogTrigger asChild>
+              <Button 
+                variant="outline" 
+                className="bg-white/10 hover:bg-white/20 text-white border-white/20"
+              >
+                <MessageCircle className="mr-2 h-4 w-4" />
+                Deixe sua Avaliação
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[500px]">
+              <DialogHeader>
+                <DialogTitle>Compartilhe sua Experiência</DialogTitle>
+                <DialogDescription>
+                  Conte-nos como foi sua estadia no Hotel Vitória. Sua opinião é muito importante para nós!
+                </DialogDescription>
+              </DialogHeader>
+              <ReviewForm onClose={() => setIsReviewOpen(false)} />
+            </DialogContent>
+          </Dialog>
         </div>
 
         <div className="relative">

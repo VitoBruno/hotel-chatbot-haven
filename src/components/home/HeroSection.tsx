@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { CalendarIcon, ChevronRight, Users, Bed } from 'lucide-react';
+import { CalendarIcon, Users, Bed } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const HeroSection: React.FC = () => {
@@ -28,13 +28,6 @@ const HeroSection: React.FC = () => {
           <p className="text-xl mb-8 max-w-2xl mx-auto text-white/80">
             Um refúgio de luxo onde cada detalhe é pensado para proporcionar momentos inesquecíveis
           </p>
-        </div>
-        <div className="animate-fade-up opacity-0">
-          <Button 
-            className="bg-white text-hotel-900 hover:bg-hotel-50 text-base py-6 px-8 rounded-full mt-4 shadow-lg"
-          >
-            Explore o Hotel <ChevronRight className="ml-1" size={18} />
-          </Button>
         </div>
       </div>
 

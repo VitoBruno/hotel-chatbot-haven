@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Utensils, Wifi, CarFront, Clock, Coffee } from 'lucide-react';
+import { Utensils, Wifi, CarFront, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface FeatureProps {
@@ -30,7 +30,7 @@ const FeaturesSection: React.FC = () => {
     { 
       icon: <Utensils size={24} />, 
       title: 'Café da Manhã', 
-      description: 'Buffet matinal completo com opções internacionais e especialidades locais.'
+      description: 'Buffet matinal completo com opções internacionais e especialidades locais das 6h às 10h.'
     },
     { 
       icon: <Wifi size={24} />, 
@@ -47,11 +47,6 @@ const FeaturesSection: React.FC = () => {
       title: 'Recepção 24h', 
       description: 'Atendimento personalizado a qualquer hora do dia ou da noite.'
     },
-    { 
-      icon: <Coffee size={24} />, 
-      title: 'Café da Manhã', 
-      description: 'Buffet completo com opções internacionais e especialidades locais das 6h às 10h.'
-    },
   ];
 
   return (
@@ -66,7 +61,7 @@ const FeaturesSection: React.FC = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {features.map((feature, index) => (
             <Feature 
               key={index}
