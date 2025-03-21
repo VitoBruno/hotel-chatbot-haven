@@ -24,8 +24,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Inter var', 'sans-serif'],
-        display: ['Inter var', 'sans-serif'],
+        sans: ['Quicksand', 'sans-serif'],
+        display: ['Quicksand', 'sans-serif'],
       },
       colors: {
         border: 'hsl(var(--border))',
