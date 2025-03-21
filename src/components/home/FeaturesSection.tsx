@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Utensils, Wifi, Spa, CarFront, Swimming, Clock, Wine, Coffee } from 'lucide-react';
+import { Utensils, Wifi, Leaf, CarFront, Waves, Clock, Wine, Coffee } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface FeatureProps {
@@ -38,7 +38,7 @@ const FeaturesSection: React.FC = () => {
       description: 'Conexão gratuita em todas as áreas do hotel para sua conveniência.'
     },
     { 
-      icon: <Spa size={24} />, 
+      icon: <Leaf size={24} />, 
       title: 'Spa & Bem-estar', 
       description: 'Tratamentos exclusivos para relaxamento e renovação completa.'
     },
@@ -48,7 +48,7 @@ const FeaturesSection: React.FC = () => {
       description: 'Serviço de manobrista e estacionamento seguro para seu veículo.'
     },
     { 
-      icon: <Swimming size={24} />, 
+      icon: <Waves size={24} />, 
       title: 'Piscinas', 
       description: 'Piscina panorâmica ao ar livre e piscina coberta aquecida.'
     },
