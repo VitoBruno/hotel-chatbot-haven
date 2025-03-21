@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Utensils, Wifi, Leaf, CarFront, Waves, Clock, Wine, Coffee } from 'lucide-react';
+import { Utensils, Wifi, CarFront, Clock, Coffee } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface FeatureProps {
@@ -29,8 +29,8 @@ const FeaturesSection: React.FC = () => {
   const features = [
     { 
       icon: <Utensils size={24} />, 
-      title: 'Restaurante Gourmet', 
-      description: 'Gastronomia de excelência com ingredientes selecionados e menu sazonal.'
+      title: 'Café da Manhã', 
+      description: 'Buffet matinal completo com opções internacionais e especialidades locais.'
     },
     { 
       icon: <Wifi size={24} />, 
@@ -38,19 +38,9 @@ const FeaturesSection: React.FC = () => {
       description: 'Conexão gratuita em todas as áreas do hotel para sua conveniência.'
     },
     { 
-      icon: <Leaf size={24} />, 
-      title: 'Spa & Bem-estar', 
-      description: 'Tratamentos exclusivos para relaxamento e renovação completa.'
-    },
-    { 
       icon: <CarFront size={24} />, 
       title: 'Estacionamento', 
       description: 'Serviço de manobrista e estacionamento seguro para seu veículo.'
-    },
-    { 
-      icon: <Waves size={24} />, 
-      title: 'Piscinas', 
-      description: 'Piscina panorâmica ao ar livre e piscina coberta aquecida.'
     },
     { 
       icon: <Clock size={24} />, 
@@ -58,14 +48,9 @@ const FeaturesSection: React.FC = () => {
       description: 'Atendimento personalizado a qualquer hora do dia ou da noite.'
     },
     { 
-      icon: <Wine size={24} />, 
-      title: 'Bar Premium', 
-      description: 'Seleção exclusiva de bebidas finas e coquetéis artesanais.'
-    },
-    { 
       icon: <Coffee size={24} />, 
       title: 'Café da Manhã', 
-      description: 'Buffet completo com opções internacionais e especialidades locais.'
+      description: 'Buffet completo com opções internacionais e especialidades locais das 6h às 10h.'
     },
   ];
 
@@ -77,11 +62,11 @@ const FeaturesSection: React.FC = () => {
             Comodidades Exclusivas
           </h2>
           <p className="text-hotel-600 dark:text-hotel-400 max-w-xl mx-auto">
-            Cada aspecto do Serenity Hotel foi cuidadosamente pensado para proporcionar uma experiência excepcional aos nossos hóspedes.
+            Cada aspecto do Hotel Vitória foi cuidadosamente pensado para proporcionar uma experiência excepcional aos nossos hóspedes.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature, index) => (
             <Feature 
               key={index}

@@ -13,8 +13,8 @@ const HeroSection: React.FC = () => {
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/50 z-10"></div>
         <img
-          src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80"
-          alt="Serenity Hotel"
+          src="https://images.unsplash.com/photo-1496307653780-42ee777d4833?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
+          alt="Hotel Vitória"
           className="w-full h-full object-cover object-center animate-blur-in"
         />
       </div>
@@ -23,7 +23,7 @@ const HeroSection: React.FC = () => {
       <div className="relative z-10 text-center text-white mb-32 px-4 w-full max-w-4xl mx-auto animate-stagger">
         <div className="animate-fade-up opacity-0">
           <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-4">
-            Experiência sublime de hospedagem
+            Hotel Vitória
           </h1>
           <p className="text-xl mb-8 max-w-2xl mx-auto text-white/80">
             Um refúgio de luxo onde cada detalhe é pensado para proporcionar momentos inesquecíveis

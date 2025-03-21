@@ -15,7 +15,7 @@ type Message = {
 const initialMessages: Message[] = [
   {
     id: '1',
-    text: 'Olá! Sou o assistente virtual do Serenity Hotel. Como posso ajudar você hoje?',
+    text: 'Olá! Sou o assistente virtual do Hotel Vitória. Como posso ajudar você hoje?',
     isBot: true,
     timestamp: new Date(),
   },
@@ -52,19 +52,20 @@ const ChatBot: React.FC = () => {
     // Simulate API call with timeout
     setTimeout(() => {
       const botResponses: Record<string, string> = {
-        reserva: "Para fazer uma reserva, você pode utilizar nosso sistema online ou ligar para +55 (11) 9876-5432. Posso ajudar com mais informações sobre disponibilidade, tipos de quarto ou tarifas?",
-        quarto: "Temos diversos tipos de quartos e suítes, desde Standard até Suítes Presidenciais. Todos incluem Wi-Fi, ar-condicionado, TV de tela plana, minibar e amenidades de luxo. Algum tipo específico que gostaria de conhecer?",
-        restaurante: "Nosso hotel conta com 3 restaurantes: o Terrazzo (culinária internacional), o Sakura (japonês) e o Olivetto (italiano). Servimos café da manhã das 6h às 10h, almoço das 12h às 15h e jantar das 19h às 23h.",
+        reserva: "Para fazer uma reserva, você pode usar nosso sistema online clicando em 'Reservar Agora' no menu superior, ou ligar para +55 (11) 9876-5432. Gostaria de saber sobre disponibilidade para alguma data específica?",
+        quarto: "Temos diversos tipos de quartos e suítes, desde Standard até Suítes Executivas. Todos incluem Wi-Fi, ar-condicionado, TV de tela plana e minibar. Qual tipo de acomodação você está procurando?",
+        "café da manhã": "Nosso café da manhã é servido diariamente das 6h às 10h no restaurante principal, com uma variedade de opções internacionais e especialidades locais.",
         checkout: "Nosso horário de check-out é às 12h, mas podemos oferecer late check-out até às 14h mediante disponibilidade. Há alguma data específica para sua saída?",
         checkin: "O check-in pode ser realizado a partir das 14h. Para early check-in, recomendamos solicitar antecipadamente, sujeito à disponibilidade.",
-        piscina: "Temos uma piscina ao ar livre no terraço com vista panorâmica e uma piscina interna aquecida no spa. O horário de funcionamento é das 7h às 22h.",
-        spa: "Nosso spa oferece diversos tratamentos, massagens e terapias. Funciona diariamente das 9h às 21h. Recomendamos reservar seu tratamento com antecedência.",
         estacionamento: "Oferecemos serviço de manobrista e estacionamento seguro para nossos hóspedes. O valor da diária é de R$40,00.",
         wifi: "Oferecemos Wi-Fi gratuito de alta velocidade em todas as áreas do hotel.",
-        pets: "Somos pet-friendly! Aceitamos animais de pequeno porte com taxa adicional de R$80 por dia. Temos amenidades especiais para seu pet."
+        pets: "Somos pet-friendly! Aceitamos animais de pequeno porte com taxa adicional de R$80 por dia. Temos amenidades especiais para seu pet.",
+        preço: "Nossos preços variam de acordo com o tipo de quarto e a temporada. Quartos Standard a partir de R$350, Deluxe a partir de R$450 e Suítes Executivas a partir de R$680. Posso verificar a disponibilidade e valores para datas específicas se desejar.",
+        promoção: "Temos várias promoções disponíveis! Estadia de 3 noites ou mais com 15% de desconto, pacotes para lua de mel e tarifas especiais para reservas antecipadas. Gostaria de saber mais sobre alguma promoção específica?",
+        localização: "O Hotel Vitória está localizado no centro da cidade, a apenas 15 minutos do aeroporto e próximo às principais atrações turísticas e centros comerciais."
       };
 
-      let botResponse = "Não entendi completamente sua pergunta. Posso ajudar com informações sobre reservas, quartos, restaurantes, check-in/out, instalações como piscina e spa, estacionamento, Wi-Fi ou política para pets.";
+      let botResponse = "Não entendi completamente sua pergunta. Posso ajudar com informações sobre reservas, quartos, café da manhã, check-in/out, estacionamento, Wi-Fi, política para pets, preços ou promoções.";
       
       // Check if message contains any of the keywords
       for (const [keyword, response] of Object.entries(botResponses)) {
@@ -125,7 +126,7 @@ const ChatBot: React.FC = () => {
               <MessageCircle size={20} />
             </div>
             <div>
-              <h3 className="font-medium text-hotel-900 dark:text-hotel-100">Assistente Serenity</h3>
+              <h3 className="font-medium text-hotel-900 dark:text-hotel-100">Assistente Hotel Vitória</h3>
               <p className="text-xs text-hotel-500 dark:text-hotel-400">Online • Resposta em instantes</p>
             </div>
           </div>

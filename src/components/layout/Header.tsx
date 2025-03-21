@@ -4,6 +4,7 @@ import { NavLink, Link } from "react-router-dom";
 import { Menu, X, ChevronDown, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import ReservationDialog from "@/components/reservation/ReservationDialog";
 
 interface NavLinkItem {
   label: string;
@@ -56,7 +57,7 @@ const Header = () => {
             className="text-2xl font-semibold tracking-tight transition-transform hover:scale-[1.02] relative"
           >
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-hotel-800 to-hotel-600 dark:from-hotel-200 dark:to-hotel-400">
-              Serenity Hotel
+              Hotel Vitória
             </span>
             <span className="absolute -bottom-1 left-0 w-full h-px bg-gradient-to-r from-transparent via-hotel-400/40 to-transparent"></span>
           </Link>
@@ -90,9 +91,7 @@ const Header = () => {
               {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
             </button>
             
-            <Button className="bg-hotel-800 hover:bg-hotel-700 text-white">
-              Reservar Agora
-            </Button>
+            <ReservationDialog />
           </div>
 
           <div className="flex md:hidden">
@@ -142,12 +141,16 @@ const Header = () => {
               {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
             </button>
             
-            <Button 
-              className="bg-hotel-800 hover:bg-hotel-700 text-white w-full"
-              onClick={() => setIsOpen(false)}
-            >
-              Reservar Agora
-            </Button>
+            <ReservationDialog 
+              trigger={
+                <Button 
+                  className="bg-hotel-800 hover:bg-hotel-700 text-white w-full"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Reservar Agora
+                </Button>
+              }
+            />
           </div>
         </div>
       </div>
