@@ -1,13 +1,46 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import React, { useEffect } from 'react';
+import Layout from '@/components/layout/Layout';
+import HeroSection from '@/components/home/HeroSection';
+import FeaturesSection from '@/components/home/FeaturesSection';
+import RoomsSection from '@/components/home/RoomsSection';
+import TestimonialsSection from '@/components/home/TestimonialsSection';
+import ContactSection from '@/components/home/ContactSection';
 
 const Index = () => {
+  // Add animation to elements when they enter the viewport
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('!opacity-100');
+          }
+        });
+      },
+      {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.1,
+      }
+    );
+
+    const animatedElements = document.querySelectorAll('.animate-fade-up, .animate-blur-in');
+    animatedElements.forEach((el) => observer.observe(el));
+
+    return () => {
+      animatedElements.forEach((el) => observer.unobserve(el));
+    };
+  }, []);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
-      </div>
-    </div>
+    <Layout>
+      <HeroSection />
+      <FeaturesSection />
+      <RoomsSection />
+      <TestimonialsSection />
+      <ContactSection />
+    </Layout>
   );
 };
 
