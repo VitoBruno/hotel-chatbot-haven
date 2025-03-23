@@ -144,26 +144,11 @@ const ContactSection: React.FC = () => {
                       <span className="text-hotel-600 dark:text-hotel-400">Recepção:</span>
                       <span className="text-hotel-800 dark:text-hotel-200 font-medium">24 horas</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-hotel-600 dark:text-hotel-400">Restaurante:</span>
-                      <span className="text-hotel-800 dark:text-hotel-200 font-medium">6:00 - 23:00</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-hotel-600 dark:text-hotel-400">Spa:</span>
-                      <span className="text-hotel-800 dark:text-hotel-200 font-medium">9:00 - 21:00</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-hotel-600 dark:text-hotel-400">Piscina:</span>
-                      <span className="text-hotel-800 dark:text-hotel-200 font-medium">7:00 - 22:00</span>
-                    </div>
+                    {/* Removed Restaurante, Spa, and Piscina options */}
                   </div>
                 </div>
                 
-                <Button 
-                  className="mt-6 bg-hotel-800 hover:bg-hotel-700 text-white"
-                >
-                  Reservar Mesa no Restaurante
-                </Button>
+                {/* Removed "Reservar Mesa no Restaurante" button */}
               </div>
             </div>
           </div>

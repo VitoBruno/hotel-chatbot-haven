@@ -1,9 +1,10 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Users, Tv, Wifi, Bath, Wind } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ReservationDialog from '../reservation/ReservationDialog';
+import RoomsDisplayDialog from '../rooms/RoomsDisplayDialog';
 
 interface RoomProps {
   image: string;
@@ -70,6 +71,8 @@ const Room: React.FC<RoomProps> = ({ image, title, description, price, capacity,
 };
 
 const RoomsSection: React.FC = () => {
+  const [showRoomsDialog, setShowRoomsDialog] = useState(false);
+  
   const rooms = [
     {
       image: "https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80",
@@ -117,16 +120,13 @@ const RoomsSection: React.FC = () => {
               Escolha entre nossos quartos e suítes cuidadosamente decorados para uma estadia perfeita.
             </p>
           </div>
-          <ReservationDialog
-            trigger={
-              <Button 
-                className="mt-4 md:mt-0 bg-hotel-800 hover:bg-hotel-700 text-white animate-fade-up opacity-0"
-                style={{ animationDelay: '0.2s' }}
-              >
-                Ver Todas as Acomodações <ArrowRight size={16} className="ml-1" />
-              </Button>
-            }
-          />
+          <Button 
+            className="mt-4 md:mt-0 bg-hotel-800 hover:bg-hotel-700 text-white animate-fade-up opacity-0"
+            style={{ animationDelay: '0.2s' }}
+            onClick={() => setShowRoomsDialog(true)}
+          >
+            Ver Todas as Acomodações <ArrowRight size={16} className="ml-1" />
+          </Button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -144,6 +144,12 @@ const RoomsSection: React.FC = () => {
           ))}
         </div>
       </div>
+      
+      {/* Dialog for displaying all rooms */}
+      <RoomsDisplayDialog 
+        open={showRoomsDialog} 
+        onOpenChange={setShowRoomsDialog} 
+      />
     </section>
   );
 };

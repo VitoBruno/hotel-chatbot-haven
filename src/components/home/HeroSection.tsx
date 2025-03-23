@@ -81,17 +81,7 @@ const HeroSection: React.FC = () => {
               </div>
             </div>
 
-            {/* Search button */}
-            <div className={cn(
-              "transition-all duration-500 overflow-hidden",
-              searchActive ? "h-16 mt-4 opacity-100" : "h-0 mt-0 opacity-0"
-            )}>
-              <Button 
-                className="w-full bg-hotel-800 hover:bg-hotel-700 text-white py-6"
-              >
-                Verificar Disponibilidade
-              </Button>
-            </div>
+            {/* Removed the "Verificar Disponibilidade" button */}
           </div>
         </div>
       </div>
