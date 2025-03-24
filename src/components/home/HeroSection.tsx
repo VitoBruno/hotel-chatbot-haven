@@ -80,8 +80,6 @@ const HeroSection: React.FC = () => {
                 </div>
               </div>
             </div>
-
-            {/* Removed the "Verificar Disponibilidade" button */}
           </div>
         </div>
       </div>

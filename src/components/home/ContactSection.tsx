@@ -3,7 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Phone, Mail, MapPin } from 'lucide-react';
+import { Phone, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const ContactSection: React.FC = () => {
@@ -99,8 +99,8 @@ const ContactSection: React.FC = () => {
                     <div>
                       <h4 className="font-medium text-hotel-800 dark:text-hotel-200 mb-1">Localização</h4>
                       <p className="text-hotel-600 dark:text-hotel-400">
-                        Av. Beira Mar, 1000, Praia Dourada<br />
-                        São Paulo - SP, 01234-567
+                        Avenida princesa do Sul N°28, Jardim Andere<br />
+                        Varginha - MG
                       </p>
                     </div>
                   </div>
@@ -112,21 +112,7 @@ const ContactSection: React.FC = () => {
                     <div>
                       <h4 className="font-medium text-hotel-800 dark:text-hotel-200 mb-1">Telefone</h4>
                       <p className="text-hotel-600 dark:text-hotel-400">
-                        +55 (11) 9876-5432<br />
-                        +55 (11) 1234-5678
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start">
-                    <div className="w-10 h-10 rounded-full bg-hotel-100 dark:bg-hotel-800 flex items-center justify-center text-hotel-600 dark:text-hotel-400 mr-4 flex-shrink-0">
-                      <Mail size={20} />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-hotel-800 dark:text-hotel-200 mb-1">Email</h4>
-                      <p className="text-hotel-600 dark:text-hotel-400">
-                        contato@serenityhotel.com<br />
-                        reservas@serenityhotel.com
+                        35 999822446
                       </p>
                     </div>
                   </div>
@@ -144,11 +130,8 @@ const ContactSection: React.FC = () => {
                       <span className="text-hotel-600 dark:text-hotel-400">Recepção:</span>
                       <span className="text-hotel-800 dark:text-hotel-200 font-medium">24 horas</span>
                     </div>
-                    {/* Removed Restaurante, Spa, and Piscina options */}
                   </div>
                 </div>
-                
-                {/* Removed "Reservar Mesa no Restaurante" button */}
               </div>
             </div>
           </div>

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Phone, Mail, MapPin, Instagram, Facebook, Twitter, Youtube } from 'lucide-react';
+import { Phone, MapPin, Instagram, Facebook, Twitter, Youtube } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -39,17 +39,13 @@ const Footer = () => {
               <li className="flex items-start">
                 <MapPin size={18} className="mt-1 mr-3 text-hotel-500 dark:text-hotel-400 flex-shrink-0" />
                 <span className="text-hotel-600 dark:text-hotel-400">
-                  Av. Beira Mar, 1000, Praia Dourada<br />
-                  São Paulo - SP, 01234-567
+                  Avenida princesa do Sul N°28, Jardim Andere<br />
+                  Varginha - MG
                 </span>
               </li>
               <li className="flex items-center">
                 <Phone size={18} className="mr-3 text-hotel-500 dark:text-hotel-400 flex-shrink-0" />
-                <span className="text-hotel-600 dark:text-hotel-400">+55 (11) 9876-5432</span>
-              </li>
-              <li className="flex items-center">
-                <Mail size={18} className="mr-3 text-hotel-500 dark:text-hotel-400 flex-shrink-0" />
-                <span className="text-hotel-600 dark:text-hotel-400">contato@hotelvitoria.com</span>
+                <span className="text-hotel-600 dark:text-hotel-400">35 999822446</span>
               </li>
             </ul>
           </div>
