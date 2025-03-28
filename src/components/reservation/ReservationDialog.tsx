@@ -11,29 +11,41 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/use-auth';
 
 interface ReservationDialogProps {
   trigger?: React.ReactNode;
+  onBeforeReserve?: () => boolean;
 }
 
-const ReservationDialog: React.FC<ReservationDialogProps> = ({ trigger }) => {
+const ReservationDialog: React.FC<ReservationDialogProps> = ({ trigger, onBeforeReserve }) => {
   const [checkIn, setCheckIn] = useState<Date>();
   const [checkOut, setCheckOut] = useState<Date>();
   const [roomType, setRoomType] = useState('');
   const [adults, setAdults] = useState('1');
   const [children, setChildren] = useState('0');
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isCheckOutCalendarOpen, setIsCheckOutCalendarOpen] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
+  const { user, isLoggedIn } = useAuth();
+
+  const handleOpenChange = (open: boolean) => {
+    if (open) {
+      // Se o dialog está abrindo, verificar se o usuário está logado
+      if (onBeforeReserve && !onBeforeReserve()) {
+        return;
+      }
+    }
+    setIsDialogOpen(open);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate the form
-    if (!checkIn || !checkOut || !roomType || !name || !email || !phone) {
+    // Validar formulário
+    if (!checkIn || !checkOut || !roomType || !phone) {
       toast({
         title: "Informações incompletas",
         description: "Por favor, preencha todos os campos obrigatórios.",
@@ -42,11 +54,22 @@ const ReservationDialog: React.FC<ReservationDialogProps> = ({ trigger }) => {
       return;
     }
 
-    // Submit the form - in a real app, this would be an API call
+    // Enviar formulário
     toast({
       title: "Reserva enviada!",
       description: "Entraremos em contato em breve para confirmar sua reserva.",
     });
+
+    // Fechar o diálogo
+    setIsDialogOpen(false);
+    
+    // Limpar formulário
+    setCheckIn(undefined);
+    setCheckOut(undefined);
+    setRoomType('');
+    setAdults('1');
+    setChildren('0');
+    setPhone('');
   };
 
   const defaultTrigger = (
@@ -56,7 +79,7 @@ const ReservationDialog: React.FC<ReservationDialogProps> = ({ trigger }) => {
   );
 
   return (
-    <Dialog>
+    <Dialog open={isDialogOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         {trigger || defaultTrigger}
       </DialogTrigger>
@@ -188,14 +211,15 @@ const ReservationDialog: React.FC<ReservationDialogProps> = ({ trigger }) => {
             </div>
           </div>
           
+          {/* Informações do usuário - Nome e Email são preenchidos automaticamente */}
           <div className="space-y-2">
             <label className="text-sm font-medium">Nome completo</label>
             <div className="relative">
               <Input 
-                value={name} 
-                onChange={(e) => setName(e.target.value)} 
+                value={user?.name || ''} 
+                disabled
                 placeholder="Seu nome completo" 
-                required
+                className="bg-muted"
               />
             </div>
           </div>
@@ -206,11 +230,10 @@ const ReservationDialog: React.FC<ReservationDialogProps> = ({ trigger }) => {
               <div className="relative">
                 <Input 
                   type="email" 
-                  value={email} 
-                  onChange={(e) => setEmail(e.target.value)} 
+                  value={user?.email || ''} 
+                  disabled
                   placeholder="seu@email.com" 
-                  className="pl-10"
-                  required
+                  className="pl-10 bg-muted"
                 />
                 <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
               </div>

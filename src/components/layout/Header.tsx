@@ -1,15 +1,26 @@
 
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, Sun, Moon } from "lucide-react";
+import { Menu, X, Sun, Moon, UserCircle, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import ReservationDialog from "@/components/reservation/ReservationDialog";
+import AuthDialog from "@/components/auth/AuthDialog";
+import { useAuth } from "@/hooks/use-auth";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
+  const { user, isLoggedIn, logout } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -24,6 +35,10 @@ const Header = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);
     document.documentElement.classList.toggle('dark');
+  };
+
+  const handleLogout = () => {
+    logout();
   };
 
   return (
@@ -56,7 +71,49 @@ const Header = () => {
               {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
             </button>
             
-            <ReservationDialog />
+            {isLoggedIn ? (
+              <>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="flex items-center gap-2">
+                      <UserCircle size={18} />
+                      <span className="hidden sm:inline-block">
+                        {user?.name || user?.email.split('@')[0]}
+                      </span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem>Minhas Reservas</DropdownMenuItem>
+                    <DropdownMenuItem>Minha Conta</DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Sair</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <ReservationDialog />
+              </>
+            ) : (
+              <>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setIsAuthDialogOpen(true)}
+                  className="text-hotel-800 dark:text-hotel-200"
+                >
+                  Entrar
+                </Button>
+                <ReservationDialog 
+                  onBeforeReserve={() => {
+                    if (!isLoggedIn) {
+                      setIsAuthDialogOpen(true);
+                      return false;
+                    }
+                    return true;
+                  }}
+                />
+              </>
+            )}
           </div>
 
           <div className="flex md:hidden">
@@ -88,19 +145,74 @@ const Header = () => {
               {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
             </button>
             
-            <ReservationDialog 
-              trigger={
+            {isLoggedIn ? (
+              <>
+                <div className="flex flex-col items-center gap-2 text-center mb-2">
+                  <UserCircle size={40} className="text-hotel-800 dark:text-hotel-200" />
+                  <p className="text-hotel-800 dark:text-hotel-200">
+                    {user?.name || user?.email.split('@')[0]}
+                  </p>
+                </div>
                 <Button 
-                  className="bg-hotel-800 hover:bg-hotel-700 text-white w-full"
-                  onClick={() => setIsOpen(false)}
+                  variant="outline" 
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 w-full"
                 >
-                  Reservar Agora
+                  <LogOut size={16} />
+                  <span>Sair</span>
                 </Button>
-              }
-            />
+                <ReservationDialog 
+                  trigger={
+                    <Button 
+                      className="bg-hotel-800 hover:bg-hotel-700 text-white w-full"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      Reservar Agora
+                    </Button>
+                  }
+                />
+              </>
+            ) : (
+              <>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setIsAuthDialogOpen(true);
+                    setIsOpen(false);
+                  }}
+                  className="w-full"
+                >
+                  Entrar / Criar Conta
+                </Button>
+                <ReservationDialog 
+                  trigger={
+                    <Button 
+                      className="bg-hotel-800 hover:bg-hotel-700 text-white w-full"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      Reservar Agora
+                    </Button>
+                  }
+                  onBeforeReserve={() => {
+                    if (!isLoggedIn) {
+                      setIsAuthDialogOpen(true);
+                      setIsOpen(false);
+                      return false;
+                    }
+                    return true;
+                  }}
+                />
+              </>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Auth Dialog */}
+      <AuthDialog 
+        open={isAuthDialogOpen} 
+        onOpenChange={setIsAuthDialogOpen} 
+      />
     </header>
   );
 };
