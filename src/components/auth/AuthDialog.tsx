@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
+import { useAuth } from '@/hooks/use-auth';
 
 type AuthView = 'login' | 'register';
 
@@ -22,6 +23,14 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
   onRegisterSuccess
 }) => {
   const [view, setView] = useState<AuthView>(defaultView);
+  const { isLoggedIn } = useAuth();
+
+  // Se o usuário já estiver logado, feche o diálogo
+  React.useEffect(() => {
+    if (isLoggedIn && open) {
+      onOpenChange(false);
+    }
+  }, [isLoggedIn, open, onOpenChange]);
 
   const handleLoginSuccess = () => {
     if (onLoginSuccess) {

@@ -27,11 +27,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const email = localStorage.getItem('userEmail') || '';
       const name = localStorage.getItem('userName');
       
-      setUser({
-        email,
-        name: name || undefined
-      });
-      setIsLoggedIn(true);
+      // Verificar se o usuário realmente existe no sistema
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      const userExists = users.some((u: any) => u.email === email);
+      
+      if (userExists) {
+        setUser({
+          email,
+          name: name || undefined
+        });
+        setIsLoggedIn(true);
+      } else {
+        // Se o usuário não existir mais, faça logout
+        logout();
+      }
     }
   }, []);
 

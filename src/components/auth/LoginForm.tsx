@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff } from 'lucide-react';
+import { useAuth } from "@/hooks/use-auth";
 
 const formSchema = z.object({
   email: z.string().email({ message: "E-mail inválido" }),
@@ -28,6 +29,7 @@ interface LoginFormProps {
 
 const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onRegisterClick }) => {
   const { toast } = useToast();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -42,12 +44,21 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onRegisterClick }
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
     try {
-      // Simulando um login bem-sucedido após 1 segundo
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Verificar se o usuário existe no localStorage
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      const user = users.find((u: any) => u.email === values.email);
       
-      // Salvar no localStorage que o usuário está logado
-      localStorage.setItem('isLoggedIn', 'true');
-      localStorage.setItem('userEmail', values.email);
+      if (!user) {
+        throw new Error("Usuário não encontrado");
+      }
+      
+      // Verificar se a senha está correta
+      if (user.password !== values.password) {
+        throw new Error("Senha incorreta");
+      }
+      
+      // Login bem-sucedido
+      login(user.email, user.name);
       
       toast({
         title: "Login realizado!",
@@ -60,7 +71,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onRegisterClick }
     } catch (error) {
       toast({
         title: "Erro ao fazer login",
-        description: "Verifique suas credenciais e tente novamente.",
+        description: error instanceof Error ? error.message : "Verifique suas credenciais e tente novamente.",
         variant: "destructive",
       });
     } finally {

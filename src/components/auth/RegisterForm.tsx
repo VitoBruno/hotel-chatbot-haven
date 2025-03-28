@@ -15,12 +15,21 @@ import {
 } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff } from 'lucide-react';
+import { useAuth } from "@/hooks/use-auth";
+
+// Define a strong password regex: at least 8 characters, one letter, one number, one special character
+const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
 
 const formSchema = z.object({
   name: z.string().min(3, { message: "O nome deve ter pelo menos 3 caracteres" }),
   email: z.string().email({ message: "E-mail inválido" }),
-  password: z.string().min(6, { message: "A senha deve ter pelo menos 6 caracteres" }),
-  confirmPassword: z.string().min(6, { message: "A senha deve ter pelo menos 6 caracteres" }),
+  password: z.string()
+    .min(8, { message: "A senha deve ter pelo menos 8 caracteres" })
+    .regex(passwordRegex, { 
+      message: "A senha deve conter pelo menos uma letra, um número e um caractere especial" 
+    }),
+  confirmPassword: z.string()
+    .min(8, { message: "A senha deve ter pelo menos 8 caracteres" }),
 })
 .refine((data) => data.password === data.confirmPassword, {
   message: "As senhas não coincidem",
@@ -34,6 +43,7 @@ interface RegisterFormProps {
 
 const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess, onLoginClick }) => {
   const { toast } = useToast();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -51,13 +61,26 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess, onLoginC
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
     try {
-      // Simulando um registro bem-sucedido após 1 segundo
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Verificar se já existe um usuário com este e-mail
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
       
-      // Salvar no localStorage que o usuário está registrado e logado
-      localStorage.setItem('isLoggedIn', 'true');
-      localStorage.setItem('userName', values.name);
-      localStorage.setItem('userEmail', values.email);
+      if (users.some((user: any) => user.email === values.email)) {
+        throw new Error("Este e-mail já está em uso");
+      }
+      
+      // Adicionar novo usuário
+      const newUser = {
+        name: values.name,
+        email: values.email,
+        password: values.password,
+        createdAt: new Date().toISOString()
+      };
+      
+      users.push(newUser);
+      localStorage.setItem('users', JSON.stringify(users));
+      
+      // Login automático após registro
+      login(values.email, values.name);
       
       toast({
         title: "Conta criada!",
@@ -70,7 +93,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess, onLoginC
     } catch (error) {
       toast({
         title: "Erro ao criar conta",
-        description: "Tente novamente mais tarde.",
+        description: error instanceof Error ? error.message : "Tente novamente mais tarde.",
         variant: "destructive",
       });
     } finally {
@@ -142,6 +165,9 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess, onLoginC
                     </button>
                   </div>
                 </FormControl>
+                <p className="text-xs text-muted-foreground mt-1">
+                  A senha deve ter pelo menos 8 caracteres, incluindo uma letra, um número e um caractere especial.
+                </p>
                 <FormMessage />
               </FormItem>
             )}
