@@ -4,6 +4,7 @@ import { MessageCircle, X, Send, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { is } from 'date-fns/locale';
 
 type Message = {
   id: string;
