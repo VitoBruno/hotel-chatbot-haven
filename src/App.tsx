@@ -7,8 +7,6 @@ import { AuthProvider } from "@/hooks/use-auth";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import UserAccount from "./pages/myAccount";  // Página da conta do usuário
-import LoginPage from "./components/auth/LoginForm";      // Página de login
-import PrivateRoute from "@/components/auth/PrivateRoute";  // Rota protegida
 
 const queryClient = new QueryClient();
 
