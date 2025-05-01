@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Menu, X, Sun, Moon, UserCircle, LogOut } from "lucide-react";
@@ -21,6 +20,7 @@ const Header = () => {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
   const { user, isLoggedIn, logout } = useAuth();
+  const [profilePic, setProfilePic] = useState<string | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -31,6 +31,22 @@ const Header = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Carregar a foto de perfil do localStorage
+  useEffect(() => {
+    if (isLoggedIn && user?.email) {
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      const currentUser = users.find((u: any) => u.email === user.email);
+      
+      if (currentUser && currentUser.profilePic) {
+        setProfilePic(currentUser.profilePic);
+      } else {
+        setProfilePic(null);
+      }
+    } else {
+      setProfilePic(null);
+    }
+  }, [isLoggedIn, user?.email]);
+
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);
@@ -39,6 +55,25 @@ const Header = () => {
 
   const handleLogout = () => {
     logout();
+  };
+
+  // Componente para Avatar do usuário (foto ou ícone)
+  const UserAvatar = () => {
+    if (profilePic) {
+      return (
+        <img 
+          src={profilePic} 
+          alt="Perfil" 
+          className="w-7 h-7 rounded-full object-cover border border-gray-200"
+          onError={(e) => {
+            // Fallback para o ícone padrão se a imagem falhar
+            setProfilePic(null);
+          }}
+        />
+      );
+    }
+    
+    return <UserCircle size={18} />;
   };
 
   return (
@@ -76,7 +111,7 @@ const Header = () => {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" className="flex items-center gap-2">
-                      <UserCircle size={18} />
+                      <UserAvatar />
                       <span className="hidden sm:inline-block">
                         {user?.name || user?.email.split('@')[0]}
                       </span>
@@ -85,7 +120,7 @@ const Header = () => {
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem>Minhas Reservas</DropdownMenuItem>
                     <Link to="/myAccount">
-                    <DropdownMenuItem>Minha Conta</DropdownMenuItem>
+                      <DropdownMenuItem>Minha Conta</DropdownMenuItem>
                     </Link>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout}>
@@ -150,7 +185,16 @@ const Header = () => {
             {isLoggedIn ? (
               <>
                 <div className="flex flex-col items-center gap-2 text-center mb-2">
-                  <UserCircle size={40} className="text-hotel-800 dark:text-hotel-200" />
+                  {profilePic ? (
+                    <img 
+                      src={profilePic} 
+                      alt="Perfil" 
+                      className="w-12 h-12 rounded-full object-cover border border-gray-200"
+                      onError={() => setProfilePic(null)}
+                    />
+                  ) : (
+                    <UserCircle size={40} className="text-hotel-800 dark:text-hotel-200" />
+                  )}
                   <p className="text-hotel-800 dark:text-hotel-200">
                     {user?.name || user?.email.split('@')[0]}
                   </p>
