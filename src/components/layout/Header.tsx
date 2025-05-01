@@ -57,7 +57,7 @@ const Header = () => {
             className="text-2xl font-semibold tracking-tight transition-transform hover:scale-[1.02] relative"
           >
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-hotel-800 to-hotel-600 dark:from-hotel-200 dark:to-hotel-400">
-              Hotel Vitória
+              Hotel Vitória Palace
             </span>
             <span className="absolute -bottom-1 left-0 w-full h-px bg-gradient-to-r from-transparent via-hotel-400/40 to-transparent"></span>
           </Link>
@@ -84,7 +84,9 @@ const Header = () => {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem>Minhas Reservas</DropdownMenuItem>
+                    <Link to="/myAccount">
                     <DropdownMenuItem>Minha Conta</DropdownMenuItem>
+                    </Link>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout}>
                       <LogOut className="mr-2 h-4 w-4" />

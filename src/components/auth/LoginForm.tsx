@@ -17,10 +17,17 @@ import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from "@/hooks/use-auth";
 
+const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+
 const formSchema = z.object({
   email: z.string().email({ message: "E-mail inválido" }),
-  password: z.string().min(6, { message: "A senha deve ter pelo menos 6 caracteres" }),
+  password: z.string()
+    .min(8, { message: "A senha deve ter pelo menos 8 caracteres" })
+    .regex(passwordRegex, {
+      message: "A senha deve conter pelo menos uma letra, um número e um caractere especial"
+    }),
 });
+
 
 interface LoginFormProps {
   onLoginSuccess?: () => void;
