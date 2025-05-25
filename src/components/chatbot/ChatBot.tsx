@@ -420,7 +420,6 @@ const ChatBot: React.FC = () => {
               placeholder="Digite sua mensagem..."
               className="flex-1 p-3 rounded-l-lg border-y border-l border-hotel-200 dark:border-hotel-700 focus:outline-none focus:ring-1 focus:ring-hotel-500 bg-white dark:bg-hotel-900 dark:text-hotel-100 resize-none overflow-hidden max-h-[120px]"
               rows={1}
-              style={{ fieldSizing: 'content' }} // For auto-expanding textarea if supported
             />
             <Button
               onClick={sendMessage}
