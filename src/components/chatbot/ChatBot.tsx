@@ -3,7 +3,6 @@ import { MessageCircle, X, Send, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-// Removed unused import: import { is } from 'date-fns/locale';
 
 type Message = {
   id: string;
@@ -11,13 +10,22 @@ type Message = {
   isBot: boolean;
   timestamp: Date;
   options?: ChatOption[];
-  // Add a flag to indicate if feedback text input is needed
-  requiresFeedbackInput?: boolean;
 };
 
 type ChatOption = {
   text: string;
   action: string;
+};
+
+// Define the type for expected input
+type ExpectedInputType = 'reservation_date' | 'reservation_code_or_name' | 'support_problem_description' | 'feedback_text' | null;
+
+// Define the structure for action handler results
+type ActionHandlerResult = Partial<Message> & {
+  expectsInputType?: ExpectedInputType;
+  // Store data temporarily if needed (e.g., selected date)
+  // In a real app, this would be managed more robustly (context, state management library)
+  // For simplicity, we'll pass data implicitly for now.
 };
 
 const initialMessages: Message[] = [
@@ -36,27 +44,29 @@ const initialMessages: Message[] = [
   },
 ];
 
-// Define action handlers outside the component for better organization
-const actionHandlers: Record<string, () => Partial<Message>> = {
+// Define action handlers outside the component
+// Now returns ActionHandlerResult
+const actionHandlers: Record<string, (userInput?: string) => ActionHandlerResult> = {
   'inicio': () => ({
     text: 'Como posso te ajudar hoje?',
     options: initialMessages[0].options,
+    expectsInputType: null, // Explicitly clear expectation
   }),
   'reserva': () => ({
     text: 'Você pode fazer sua reserva diretamente pelo nosso site ou se preferir, posso te ajudar agora mesmo!',
     options: [
       { text: 'Quero fazer uma reserva agora.', action: 'fazer_reserva' },
       { text: 'Quero saber mais sobre os quartos disponíveis.', action: 'info_quartos' },
-      { text: 'Voltar ao início', action: 'inicio' }, // Contextual back
+      { text: 'Voltar ao início', action: 'inicio' },
     ],
+    expectsInputType: null,
   }),
   'fazer_reserva': () => ({
-    text: 'Ótimo! Para qual data você gostaria de reservar? (Por favor, digite a data desejada)',
-    // Simplification: Remove date buttons, expect text input (though not handled yet)
+    text: 'Ótimo! Para qual data você gostaria de reservar? (Por favor, digite a data desejada, ex: DD/MM/AAAA)',
     options: [
-      // Example: { text: 'Próximo fim de semana', action: 'data_selecionada' },
       { text: 'Voltar', action: 'reserva' },
     ],
+    expectsInputType: 'reservation_date', // Expect date input
   }),
   'info_quartos': () => ({
     text: 'Temos os seguintes tipos de quarto: Solteiro (R$110), Solteiro com Ar (R$150), Casal (R$190), Casal com Ar (R$220). Gostaria de iniciar uma reserva?',
@@ -64,10 +74,12 @@ const actionHandlers: Record<string, () => Partial<Message>> = {
       { text: 'Sim, iniciar reserva', action: 'fazer_reserva' },
       { text: 'Não, obrigado', action: 'inicio' },
     ],
+    expectsInputType: null,
   }),
-  'data_selecionada': () => ({
-    // This action might be triggered differently if date input is handled via text
-    text: 'Temos disponibilidade para essa data. Qual tipo de quarto você prefere?',
+  // This action is now triggered *after* receiving the date input
+  'process_reservation_date': (userInput) => ({
+    // Basic validation (in real app, use date-fns or similar)
+    text: `Ok, você selecionou a data: ${userInput}. Qual tipo de quarto você prefere?`,
     options: [
       { text: 'Solteiro - R$110', action: 'quarto_selecionado' },
       { text: 'Solteiro com Ar Condicionado - R$150', action: 'quarto_selecionado' },
@@ -75,38 +87,47 @@ const actionHandlers: Record<string, () => Partial<Message>> = {
       { text: 'Casal com Ar Condicionado - R$220', action: 'quarto_selecionado' },
       { text: 'Voltar (escolher data)', action: 'fazer_reserva' },
     ],
+    expectsInputType: null,
   }),
-  'quarto_selecionado': () => ({
-    text: 'Perfeito! Sua reserva está quase pronta. Posso confirmar os seguintes detalhes: 1 quarto para a data selecionada.', // Placeholder details
-    options: [
-      { text: 'Confirmar a reserva.', action: 'confirmar_reserva' },
-      { text: 'Alterar detalhes.', action: 'reserva' }, // Go back to reservation start
-    ],
-  }),
+  'quarto_selecionado': (userInput) => {
+    // UserInput here would be the text of the button clicked, e.g., 'Solteiro - R$110'
+    // In a real app, you'd parse the room type and price
+    return {
+        text: `Perfeito! Sua reserva para ${userInput} está quase pronta. Posso confirmar?`,
+        options: [
+            { text: 'Confirmar a reserva.', action: 'confirmar_reserva' },
+            { text: 'Alterar quarto.', action: 'process_reservation_date' }, // Go back to room selection (needs date context)
+            { text: 'Alterar data.', action: 'fazer_reserva' },
+        ],
+        expectsInputType: null,
+    };
+  },
   'confirmar_reserva': () => ({
     text: 'Sua reserva foi feita com sucesso! Você receberá um e-mail com os detalhes. Precisa de mais alguma coisa?',
     options: [
       { text: 'Não, obrigado.', action: 'encerrar' },
       { text: 'Sim, tenho outra dúvida.', action: 'inicio' },
     ],
+    expectsInputType: null,
   }),
   'duvida_reserva': () => ({
-    text: 'Certo! Para agilizar o atendimento, poderia informar seu código de reserva ou o nome utilizado na reserva? (Por favor, digite a informação)',
-    // Expect text input
+    text: 'Certo! Para agilizar o atendimento, poderia informar seu código de reserva ou o nome completo utilizado na reserva? (Por favor, digite a informação)',
     options: [
-      // Example: { text: 'Informar código', action: 'info_reserva' },
       { text: 'Não tenho o código/nome', action: 'sem_codigo' },
       { text: 'Voltar ao início', action: 'inicio' },
     ],
+    expectsInputType: 'reservation_code_or_name', // Expect code/name input
   }),
-  'info_reserva': () => ({
+  // Triggered after receiving reservation code/name
+  'process_reservation_info': (userInput) => ({
     // Placeholder response - needs backend integration
-    text: 'Obrigado! Aqui estão os detalhes da sua reserva: Quarto simples para 2 noites. Posso te ajudar com mais alguma coisa?',
+    text: `Obrigado! Buscando informações para: ${userInput}. Aqui estão os detalhes da sua reserva: Quarto simples para 2 noites. Posso te ajudar com mais alguma coisa?`,
     options: [
       { text: 'Quero modificar minha reserva.', action: 'modificar_reserva' },
       { text: 'Quero cancelar minha reserva.', action: 'cancelar_reserva' },
       { text: 'Voltar ao início', action: 'inicio' },
     ],
+    expectsInputType: null,
   }),
   'modificar_reserva': () => ({
     text: 'Para modificar sua reserva, por favor, entre em contato com nossa recepção pelo telefone 35 999822446.',
@@ -114,6 +135,7 @@ const actionHandlers: Record<string, () => Partial<Message>> = {
       { text: 'Entendi, obrigado.', action: 'encerrar' },
       { text: 'Tenho outra dúvida.', action: 'inicio' },
     ],
+    expectsInputType: null,
   }),
   'cancelar_reserva': () => ({
     text: 'Para cancelar sua reserva, por favor, entre em contato com nossa recepção pelo telefone 35 999822446.',
@@ -121,6 +143,7 @@ const actionHandlers: Record<string, () => Partial<Message>> = {
       { text: 'Entendi, obrigado.', action: 'encerrar' },
       { text: 'Tenho outra dúvida.', action: 'inicio' },
     ],
+    expectsInputType: null,
   }),
   'sem_codigo': () => ({
     text: 'Sem problemas. Neste caso, sugiro entrar em contato com nossa recepção pelo telefone 35 999822446. Eles poderão ajudar com todas as informações sobre sua reserva.',
@@ -128,6 +151,7 @@ const actionHandlers: Record<string, () => Partial<Message>> = {
       { text: 'Entendi, obrigado.', action: 'encerrar' },
       { text: 'Tenho outra dúvida.', action: 'inicio' },
     ],
+    expectsInputType: null,
   }),
   'servicos': () => ({
     text: 'Temos diversos serviços para tornar sua estadia mais confortável! Sobre qual serviço deseja saber mais?',
@@ -138,6 +162,7 @@ const actionHandlers: Record<string, () => Partial<Message>> = {
       { text: 'Outras informações', action: 'outras_infos' },
       { text: 'Voltar ao início', action: 'inicio' },
     ],
+    expectsInputType: null,
   }),
   'cafe_manha': () => ({
     text: 'Nosso café da manhã é servido das 6h às 10h no restaurante principal. Oferecemos uma variedade de opções, incluindo frutas frescas, pães, queijos, frios, bolos, sucos naturais e café.',
@@ -145,6 +170,7 @@ const actionHandlers: Record<string, () => Partial<Message>> = {
       { text: 'Ver outros serviços', action: 'servicos' },
       { text: 'Voltar ao início', action: 'inicio' },
     ],
+    expectsInputType: null,
   }),
   'academia_spa': () => ({
     text: 'Nossa academia está disponível 24 horas para os hóspedes. O spa oferece massagens e tratamentos de beleza, mediante agendamento prévio na recepção.',
@@ -152,6 +178,7 @@ const actionHandlers: Record<string, () => Partial<Message>> = {
       { text: 'Ver outros serviços', action: 'servicos' },
       { text: 'Voltar ao início', action: 'inicio' },
     ],
+    expectsInputType: null,
   }),
   'estacionamento': () => ({
     text: 'Oferecemos estacionamento gratuito para todos os hóspedes, com segurança 24 horas.',
@@ -159,6 +186,7 @@ const actionHandlers: Record<string, () => Partial<Message>> = {
       { text: 'Ver outros serviços', action: 'servicos' },
       { text: 'Voltar ao início', action: 'inicio' },
     ],
+    expectsInputType: null,
   }),
    'outras_infos': () => ({
     text: 'Para outras informações sobre serviços, por favor, entre em contato com a recepção.',
@@ -166,6 +194,7 @@ const actionHandlers: Record<string, () => Partial<Message>> = {
       { text: 'Ver outros serviços', action: 'servicos' },
       { text: 'Voltar ao início', action: 'inicio' },
     ],
+    expectsInputType: null,
   }),
   'suporte': () => ({
     text: 'Entendi! Pode me informar qual problema está enfrentando?',
@@ -176,6 +205,7 @@ const actionHandlers: Record<string, () => Partial<Message>> = {
       { text: 'Outro problema.', action: 'outro_problema' },
       { text: 'Voltar ao início', action: 'inicio' },
     ],
+    expectsInputType: null,
   }),
   'wifi_problema': () => ({
     text: 'Vamos resolver isso! Tente desconectar e conectar novamente à rede "Hotel_Vitoria". A senha é o número do seu quarto seguido de "guest". Caso o problema persista, vou encaminhar sua solicitação para nossa equipe de suporte.',
@@ -184,6 +214,7 @@ const actionHandlers: Record<string, () => Partial<Message>> = {
       { text: 'Ainda não funciona', action: 'suporte_humano' },
       { text: 'Ver outros problemas', action: 'suporte' },
     ],
+    expectsInputType: null,
   }),
   'tv_problema': () => ({
     text: 'Por favor, verifique se a TV e o receptor estão ligados na tomada e se os cabos estão bem conectados. Se o problema continuar, entre em contato com a recepção para enviarmos alguém.',
@@ -192,6 +223,7 @@ const actionHandlers: Record<string, () => Partial<Message>> = {
       { text: 'Ver outros problemas', action: 'suporte' },
       { text: 'Voltar ao início', action: 'inicio' },
     ],
+    expectsInputType: null,
   }),
   'ar_problema': () => ({
     text: 'Verifique se o controle remoto está com pilhas e se o disjuntor do quarto está ligado. Se ainda assim não funcionar, por favor, contate a recepção.',
@@ -200,14 +232,24 @@ const actionHandlers: Record<string, () => Partial<Message>> = {
       { text: 'Ver outros problemas', action: 'suporte' },
       { text: 'Voltar ao início', action: 'inicio' },
     ],
+    expectsInputType: null,
   }),
   'outro_problema': () => ({
     text: 'Por favor, descreva o problema que está enfrentando para que eu possa tentar ajudar ou direcionar para a equipe correta.',
-    // Expect text input
     options: [
       { text: 'Voltar (escolher problema)', action: 'suporte' },
       { text: 'Voltar ao início', action: 'inicio' },
     ],
+    expectsInputType: 'support_problem_description', // Expect problem description
+  }),
+  // Triggered after receiving problem description
+  'process_support_description': (userInput) => ({
+    text: `Entendido. Registrei o seguinte problema: "${userInput}". Encaminhei sua solicitação para nossa equipe responsável. Eles entrarão em contato em breve, se necessário. Precisa de mais alguma coisa?`,
+    options: [
+      { text: 'Não, obrigado.', action: 'encerrar' },
+      { text: 'Sim, tenho outra dúvida.', action: 'inicio' },
+    ],
+    expectsInputType: null,
   }),
   'suporte_humano': () => ({
     text: 'Entendido. Encaminhei sua solicitação para nossa equipe de suporte técnico. Eles entrarão em contato em breve. Precisa de mais alguma coisa?',
@@ -215,57 +257,68 @@ const actionHandlers: Record<string, () => Partial<Message>> = {
       { text: 'Não, obrigado.', action: 'encerrar' },
       { text: 'Sim, tenho outra dúvida.', action: 'inicio' },
     ],
+    expectsInputType: null,
   }),
   'feedback': () => ({
     text: 'Adoraríamos ouvir sua opinião! Como você avalia sua experiência no nosso hotel?',
     options: [
       { text: 'Excelente!', action: 'feedback_excelente' },
-      { text: 'Boa.', action: 'feedback_bom' }, // Simplified text
-      { text: 'Ruim.', action: 'feedback_ruim' }, // Simplified text
+      { text: 'Boa.', action: 'feedback_bom' },
+      { text: 'Ruim.', action: 'feedback_ruim' },
       { text: 'Voltar ao início', action: 'inicio' },
     ],
+    expectsInputType: null,
   }),
   'feedback_excelente': () => ({
     text: 'Que maravilha! Ficamos muito felizes em saber que sua experiência foi excelente. Obrigado pelo feedback positivo! Gostaria de adicionar algum comentário?',
-    requiresFeedbackInput: true, // Indicate need for text input
     options: [
-      { text: 'Enviar comentário', action: 'enviar_feedback_texto' },
+      // Button removed, text input expected now
+      // { text: 'Enviar comentário', action: 'enviar_feedback_texto' },
       { text: 'Não, obrigado', action: 'encerrar' },
       { text: 'Tenho outra dúvida', action: 'inicio' },
     ],
+    expectsInputType: 'feedback_text',
   }),
   'feedback_bom': () => ({
     text: 'Obrigado pelo feedback! Gostaríamos de saber como podemos melhorar. Poderia nos contar um pouco mais?',
-    requiresFeedbackInput: true, // Indicate need for text input
     options: [
-      { text: 'Enviar comentário', action: 'enviar_feedback_texto' },
       { text: 'Não, obrigado', action: 'encerrar' },
       { text: 'Tenho outra dúvida', action: 'inicio' },
     ],
+    expectsInputType: 'feedback_text',
   }),
   'feedback_ruim': () => ({
     text: 'Lamentamos que sua experiência não tenha sido boa. Seu feedback é muito importante para nós. Por favor, conte-nos o que aconteceu para que possamos melhorar.',
-    requiresFeedbackInput: true, // Indicate need for text input
     options: [
-      { text: 'Enviar comentário', action: 'enviar_feedback_texto' },
       { text: 'Não, obrigado', action: 'encerrar' },
       { text: 'Tenho outra dúvida', action: 'inicio' },
     ],
+    expectsInputType: 'feedback_text',
   }),
-  'enviar_feedback_texto': () => ({
-    // This action is triggered by the 'Enviar comentário' button, assumes text is in inputValue
-    text: 'Obrigado pelo seu comentário! Ele é muito importante para nós. Esperamos ter a chance de recebê-lo novamente e oferecer uma experiência melhor.',
+  // Triggered after receiving feedback text
+  'process_feedback_text': (userInput) => ({
+    text: `Obrigado pelo seu comentário: "${userInput.substring(0, 50)}...". Ele é muito importante para nós. Esperamos ter a chance de recebê-lo novamente e oferecer uma experiência melhor.`,
     options: [
       { text: 'Tenho outra dúvida', action: 'inicio' },
       { text: 'Encerrar conversa', action: 'encerrar' },
     ],
+    expectsInputType: null,
   }),
   'encerrar': () => ({
     text: 'Obrigado por falar comigo! Se precisar de mais alguma coisa, é só chamar. Tenha um ótimo dia! 😊',
     options: [
       { text: 'Iniciar nova conversa', action: 'inicio' },
     ],
+    expectsInputType: null,
   }),
+};
+
+// Mapping from expected input type to the action that processes it
+const inputProcessingActions: Partial<Record<ExpectedInputType, string>> = {
+  'reservation_date': 'process_reservation_date',
+  'reservation_code_or_name': 'process_reservation_info',
+  'support_problem_description': 'process_support_description',
+  'feedback_text': 'process_feedback_text',
 };
 
 const ChatBot: React.FC = () => {
@@ -273,8 +326,8 @@ const ChatBot: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  // State to track if the bot is expecting feedback text input
-  const [awaitingFeedbackInput, setAwaitingFeedbackInput] = useState(false);
+  // State to track the type of input the bot is currently waiting for
+  const [expectedInputType, setExpectedInputType] = useState<ExpectedInputType>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -294,43 +347,49 @@ const ChatBot: React.FC = () => {
     return newMessage;
   };
 
-  const handleOptionClick = (action: string) => {
-    // Find the text of the clicked option to display as user message
-    const lastBotMessage = messages.slice().reverse().find(m => m.isBot && m.options);
-    const optionText = lastBotMessage?.options?.find(opt => opt.action === action)?.text || action; // Fallback to action name
-
-    addMessage({ text: optionText, isBot: false });
+  // Function to trigger bot response based on action and optional user input
+  const triggerBotResponse = (action: string, userInput?: string) => {
     setIsLoading(true);
-    setAwaitingFeedbackInput(false); // Reset feedback input state
+    setExpectedInputType(null); // Assume input expectation is cleared unless set again
 
     setTimeout(() => {
       const handler = actionHandlers[action];
-      let botResponseData: Partial<Message>;
+      let botResponseData: ActionHandlerResult;
 
       if (handler) {
-        botResponseData = handler();
+        botResponseData = handler(userInput);
       } else {
-        // Improved Fallback: Ask to rephrase or offer main options
+        // Fallback for unknown action
         botResponseData = {
-          text: 'Desculpe, não tenho uma resposta para isso no momento. Você poderia tentar perguntar de outra forma ou escolher uma das opções abaixo?',
+          text: 'Desculpe, ocorreu um erro interno. Por favor, tente começar de novo.',
           options: initialMessages[0].options,
+          expectsInputType: null,
         };
       }
 
-      const newBotMessage = addMessage({
+      addMessage({
         text: botResponseData.text || '...', // Default text if missing
         isBot: true,
         options: botResponseData.options,
-        requiresFeedbackInput: botResponseData.requiresFeedbackInput,
       });
 
-      // Set state if the bot expects text input for feedback
-      if (newBotMessage.requiresFeedbackInput) {
-        setAwaitingFeedbackInput(true);
+      // Set state if the bot expects further input
+      if (botResponseData.expectsInputType) {
+        setExpectedInputType(botResponseData.expectsInputType);
       }
 
       setIsLoading(false);
-    }, 1000); // Simulate network delay
+    }, 800); // Simulate network delay slightly shorter
+  };
+
+  const handleOptionClick = (action: string) => {
+    // Find the text of the clicked option to display as user message
+    const lastBotMessage = messages.slice().reverse().find(m => m.isBot && m.options);
+    const optionText = lastBotMessage?.options?.find(opt => opt.action === action)?.text || action;
+
+    addMessage({ text: optionText, isBot: false });
+    // Trigger the bot response associated with the clicked action
+    triggerBotResponse(action, optionText); // Pass optionText as potential userInput for context
   };
 
   const sendMessage = async () => {
@@ -338,37 +397,37 @@ const ChatBot: React.FC = () => {
     if (!trimmedInput) return;
 
     addMessage({ text: trimmedInput, isBot: false });
+    const currentExpectedInput = expectedInputType; // Capture before clearing
     setInputValue('');
-    setIsLoading(true);
+    setExpectedInputType(null); // Clear expectation immediately
 
-    // Check if we are expecting feedback text
-    if (awaitingFeedbackInput) {
-      setAwaitingFeedbackInput(false);
-      // Simulate sending feedback and trigger the 'enviar_feedback_texto' response
-      setTimeout(() => {
-        const feedbackResponseData = actionHandlers['enviar_feedback_texto']();
-        addMessage({
-          text: feedbackResponseData.text || 'Obrigado pelo feedback!',
-          isBot: true,
-          options: feedbackResponseData.options,
-        });
-        setIsLoading(false);
-      }, 1000);
+    // Check if we were expecting a specific type of input
+    if (currentExpectedInput) {
+      const processingAction = inputProcessingActions[currentExpectedInput];
+      if (processingAction) {
+        // Trigger the action that processes this specific input
+        triggerBotResponse(processingAction, trimmedInput);
+      } else {
+        // Fallback if processing action is missing (should not happen)
+        triggerBotResponse('inicio');
+      }
       return; // Stop further processing
     }
 
-    // --- Basic Keyword Matching (Keep for now, but NLU is better) ---
+    // --- If no specific input was expected, use Basic Keyword Matching ---
+    setIsLoading(true);
     setTimeout(() => {
       const keywords = {
-        reserva: ['reserva', 'reservar', 'quarto', 'agendar', 'marcar', 'preço', 'disponibilidade'],
-        duvida: ['dúvida', 'duvida', 'minha reserva', 'confirmação', 'código'],
+        reserva: ['reserva', 'reservar', 'quarto', 'agendar', 'marcar', 'preço', 'disponibilidade', 'data'],
+        duvida: ['dúvida', 'duvida', 'minha reserva', 'confirmação', 'código', 'nome'],
         servicos: ['serviço', 'servico', 'wifi', 'café', 'restaurante', 'spa', 'academia', 'estacionamento'],
-        suporte: ['problema', 'não funciona', 'quebrado', 'suporte', 'ajuda', 'técnica', 'tv', 'ar', 'internet'],
+        suporte: ['problema', 'não funciona', 'quebrado', 'suporte', 'ajuda', 'técnica', 'tv', 'ar', 'internet', 'wi-fi'],
         feedback: ['feedback', 'opinião', 'avaliação', 'comentário', 'sugestão', 'reclamar'],
       };
       const lowerCaseMessage = trimmedInput.toLowerCase();
       let matchedAction: string | null = null;
 
+      // Simple keyword check - first match wins
       if (keywords.reserva.some(word => lowerCaseMessage.includes(word))) matchedAction = 'reserva';
       else if (keywords.duvida.some(word => lowerCaseMessage.includes(word))) matchedAction = 'duvida_reserva';
       else if (keywords.servicos.some(word => lowerCaseMessage.includes(word))) matchedAction = 'servicos';
@@ -376,32 +435,18 @@ const ChatBot: React.FC = () => {
       else if (keywords.feedback.some(word => lowerCaseMessage.includes(word))) matchedAction = 'feedback';
 
       if (matchedAction) {
-        // Trigger the corresponding action handler instead of just showing options
-        const handler = actionHandlers[matchedAction];
-        if (handler) {
-          const botResponseData = handler();
-          addMessage({
-            text: botResponseData.text || '...', 
-            isBot: true,
-            options: botResponseData.options,
-            requiresFeedbackInput: botResponseData.requiresFeedbackInput,
-          });
-           if (botResponseData.requiresFeedbackInput) setAwaitingFeedbackInput(true);
-        } else {
-           // Fallback if handler is missing for some reason
-           addMessage({ text: 'Entendi que você quer falar sobre ' + matchedAction + '. Como posso ajudar?', isBot: true, options: initialMessages[0].options });
-        }
+        // Trigger the matched action
+        triggerBotResponse(matchedAction);
       } else {
-        // Improved Fallback for free text
+        // Fallback for free text not matching keywords and not expected
         addMessage({
           text: 'Desculpe, não entendi bem sua pergunta. Você pode tentar reformular ou escolher uma das opções abaixo:',
           isBot: true,
           options: initialMessages[0].options,
         });
+        setIsLoading(false); // Ensure loading stops on fallback
       }
-
-      setIsLoading(false);
-    }, 1000);
+    }, 800);
     // --- End Keyword Matching ---
   };
 
@@ -410,10 +455,10 @@ const ChatBot: React.FC = () => {
       e.preventDefault();
       sendMessage();
     }
-    // Auto-resize textarea (optional)
+    // Auto-resize textarea
     const textarea = e.currentTarget;
-    textarea.style.height = 'auto'; // Reset height
-    textarea.style.height = `${textarea.scrollHeight}px`; // Set to scroll height
+    textarea.style.height = 'auto';
+    textarea.style.height = `${textarea.scrollHeight}px`;
   };
 
   return (
@@ -478,8 +523,8 @@ const ChatBot: React.FC = () => {
                       : "bg-hotel-800 text-white rounded-br-none"
                   )}
                 >
-                  <p className="text-sm whitespace-pre-wrap">{message.text}</p> {/* Added whitespace-pre-wrap */}
-                  <p className="text-[10px] mt-1 opacity-60 text-right"> {/* Align timestamp right */}
+                  <p className="text-sm whitespace-pre-wrap">{message.text}</p>
+                  <p className="text-[10px] mt-1 opacity-60 text-right">
                     {new Intl.DateTimeFormat('pt-BR', {
                       hour: '2-digit',
                       minute: '2-digit'
@@ -489,7 +534,7 @@ const ChatBot: React.FC = () => {
               </div>
             ))}
 
-            {/* Options buttons */}
+            {/* Options buttons - Hide if expecting text input? Or keep for navigation? Keep for now. */}
             {messages.length > 0 && messages[messages.length - 1].options && messages[messages.length - 1].options!.length > 0 && !isLoading && (
               <div className="flex flex-col space-y-2 mt-4 animate-fade-up">
                 {messages[messages.length - 1].options!.map((option, index) => (
@@ -512,7 +557,6 @@ const ChatBot: React.FC = () => {
                   <MessageCircle size={14} />
                 </div>
                 <div className="rounded-2xl px-4 py-3 bg-hotel-50 dark:bg-hotel-800 text-hotel-900 dark:text-hotel-100 rounded-bl-none">
-                  {/* Simple loading dots */}
                   <div className="flex space-x-1">
                     <span className="w-2 h-2 bg-hotel-400 rounded-full animate-bounce delay-0"></span>
                     <span className="w-2 h-2 bg-hotel-400 rounded-full animate-bounce delay-150"></span>
@@ -532,7 +576,7 @@ const ChatBot: React.FC = () => {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={awaitingFeedbackInput ? "Digite seu comentário aqui..." : "Digite sua mensagem..."}
+              placeholder={expectedInputType ? `Por favor, digite ${expectedInputType.replace(/_/g, ' ')}...` : "Digite sua mensagem..."} // Dynamic placeholder
               className="flex-1 p-3 rounded-l-lg border-y border-l border-hotel-200 dark:border-hotel-700 focus:outline-none focus:ring-1 focus:ring-hotel-500 bg-white dark:bg-hotel-900 dark:text-hotel-100 resize-none overflow-hidden min-h-[44px] max-h-[120px] text-sm"
               rows={1}
               disabled={isLoading}
