@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -22,7 +21,7 @@ type ChatOption = {
 const initialMessages: Message[] = [
   {
     id: '1',
-    text: 'Olá! Bem-vindo ao Hotel Vitória. Como posso te ajudar hoje?',
+    text: 'Olá! Boas-vindas ao Hotel Vitória! Sou seu assistente virtual e estou aqui para ajudar com suas dúvidas e solicitações. Como posso ser útil hoje?',
     isBot: true,
     timestamp: new Date(),
     options: [
@@ -50,9 +49,31 @@ const ChatBot: React.FC = () => {
   }, [messages, isOpen]);
 
   const handleOptionClick = (action: string) => {
+    let userMessageText = '';
+    // Find the text of the option clicked by the user
+    const lastBotMessageWithOptions = messages.slice().reverse().find(m => m.isBot && m.options && m.options.length > 0);
+    if (lastBotMessageWithOptions && lastBotMessageWithOptions.options) {
+        const clickedOption = lastBotMessageWithOptions.options.find(opt => opt.action === action);
+        if (clickedOption) {
+            userMessageText = clickedOption.text;
+        }
+    }
+    // If not found in last bot message, check initial messages (less likely for subsequent interactions but good for robustness)
+    if (!userMessageText) {
+        const initialOption = initialMessages[0].options?.find(opt => opt.action === action);
+        if (initialOption) {
+            userMessageText = initialOption.text;
+        }
+    }
+    // Fallback if text not found (e.g. direct action call)
+    if (!userMessageText) {
+        userMessageText = action.replace(/_/g, ' '); // Simple fallback
+        userMessageText = userMessageText.charAt(0).toUpperCase() + userMessageText.slice(1);
+    }
+
     let userMessage: Message = {
       id: Date.now().toString(),
-      text: messages.find(m => m.options?.some(opt => opt.action === action))?.options?.find(opt => opt.action === action)?.text || '',
+      text: userMessageText,
       isBot: false,
       timestamp: new Date(),
     };
@@ -71,15 +92,14 @@ const ChatBot: React.FC = () => {
 
       switch (action) {
         case 'reserva':
-          botResponse.text = 'Você pode fazer sua reserva diretamente pelo nosso site ou se preferir, posso te ajudar agora mesmo!';
+          botResponse.text = 'Com certeza! Você pode fazer sua reserva de forma rápida e segura através do nosso site. Se preferir, posso te guiar pelo processo por aqui. O que acha?';
           botResponse.options = [
             { text: 'Quero fazer uma reserva agora.', action: 'fazer_reserva' },
             { text: 'Quero saber mais sobre os quartos disponíveis.', action: 'info_quartos' },
           ];
           break;
         case 'fazer_reserva':
-          botResponse.text = 'Ótimo! Para qual data você gostaria de reservar?';
-          // Aqui seria ideal ter um componente de calendário, mas vamos simplificar
+          botResponse.text = 'Excelente escolha! Para começarmos, por favor, me informe para qual data você gostaria de fazer a reserva?';
           botResponse.options = [
             { text: 'Próximo fim de semana', action: 'data_selecionada' },
             { text: 'Próximo mês', action: 'data_selecionada' },
@@ -87,7 +107,7 @@ const ChatBot: React.FC = () => {
           ];
           break;
         case 'data_selecionada':
-          botResponse.text = 'Temos disponibilidade para essa data. Qual tipo de quarto você prefere?';
+          botResponse.text = 'Perfeito! Verifiquei aqui e temos disponibilidade para a data selecionada. Agora, qual tipo de quarto melhor se adapta às suas necessidades? Temos algumas opções excelentes.';
           botResponse.options = [
             { text: 'Solteiro - R$110', action: 'quarto_selecionado' },
             { text: 'Solteiro com Ar Condicionado - R$150', action: 'quarto_selecionado' },
@@ -96,122 +116,121 @@ const ChatBot: React.FC = () => {
           ];
           break;
         case 'quarto_selecionado':
-          botResponse.text = 'Perfeito! Sua reserva está quase pronta. Posso confirmar os seguintes detalhes: 1 quarto para a data selecionada.';
+          botResponse.text = 'Ótima escolha! Estamos quase lá. Para confirmar, sua pré-reserva inclui o tipo de quarto selecionado para as datas escolhidas. Deseja prosseguir com a confirmação?';
           botResponse.options = [
             { text: 'Confirmar a reserva.', action: 'confirmar_reserva' },
             { text: 'Alterar detalhes.', action: 'reserva' },
           ];
           break;
         case 'confirmar_reserva':
-          botResponse.text = 'Sua reserva foi feita com sucesso! Você receberá um e-mail com os detalhes. Precisa de mais alguma coisa?';
+          botResponse.text = 'Parabéns! Sua reserva no Hotel Vitória foi confirmada com sucesso! Em instantes, você receberá um e-mail com todos os detalhes. Há algo mais em que posso te ajudar agora?';
           botResponse.options = [
-            { text: 'Não, obrigado.', action: 'encerrar' },
+            { text: 'Não, obrigado(a).', action: 'encerrar' },
             { text: 'Sim, tenho outra dúvida.', action: 'inicio' },
           ];
           break;
         case 'duvida_reserva':
-          botResponse.text = 'Certo! Para agilizar o atendimento, poderia informar seu código de reserva ou o nome utilizado na reserva?';
-          // Simplificando para demonstração
+          botResponse.text = 'Entendido. Para que eu possa localizar sua reserva rapidamente e te ajudar da melhor forma, por favor, informe o código da reserva ou o nome completo em que ela foi realizada.';
           botResponse.options = [
-            { text: 'Informar código', action: 'info_reserva' },
-            { text: 'Não tenho o código', action: 'sem_codigo' },
+            { text: 'Informar código/nome', action: 'info_reserva' }, // Changed action to be more generic, or expect text input
+            { text: 'Não tenho os dados agora', action: 'sem_codigo' },
           ];
           break;
         case 'info_reserva':
-          botResponse.text = 'Obrigado! Aqui estão os detalhes da sua reserva: Quarto simples para 2 noites. Posso te ajudar com mais alguma coisa?';
+          // This case now assumes user will type info, or we need another step.
+          // For simplicity, let's assume this is a placeholder response after they *would* provide info.
+          botResponse.text = 'Obrigado pelas informações! Localizei sua reserva. Como posso te ajudar com ela hoje? Você pode querer modificar, cancelar ou apenas tirar alguma dúvida sobre os detalhes.';
           botResponse.options = [
-            { text: 'Quero modificar minha reserva.', action: 'modificar_reserva' },
-            { text: 'Quero cancelar minha reserva.', action: 'cancelar_reserva' },
-            { text: 'Outra dúvida.', action: 'inicio' },
+            { text: 'Quero modificar minha reserva.', action: 'modificar_reserva' }, // Placeholder actions
+            { text: 'Quero cancelar minha reserva.', action: 'cancelar_reserva' },   // Placeholder actions
+            { text: 'Voltar ao início', action: 'inicio' },
           ];
           break;
         case 'sem_codigo':
-          botResponse.text = 'Sem problemas. Neste caso, sugiro entrar em contato com nossa recepção pelo telefone 35 999822446. Eles poderão ajudar com todas as informações sobre sua reserva.';
+          botResponse.text = 'Não se preocupe. Se não tiver o código ou o nome exato, o ideal é entrar em contato diretamente com nossa recepção pelo telefone (35) 99982-2446. Nossa equipe terá prazer em localizar sua reserva e ajudar com o que precisar.';
           botResponse.options = [
-            { text: 'Entendi, obrigado.', action: 'encerrar' },
+            { text: 'Entendi, obrigado(a).', action: 'encerrar' },
             { text: 'Tenho outra dúvida.', action: 'inicio' },
           ];
           break;
         case 'servicos':
-          botResponse.text = 'Temos diversos serviços para tornar sua estadia mais confortável! Sobre qual serviço deseja saber mais?';
+          botResponse.text = 'No Hotel Vitória, oferecemos uma variedade de serviços pensados para tornar sua estadia ainda mais especial e confortável. Sobre qual deles você gostaria de mais informações?';
           botResponse.options = [
             { text: 'Café da Manhã', action: 'cafe_manha' },
             { text: 'Academia e Spa', action: 'academia_spa' },
             { text: 'Estacionamento', action: 'estacionamento' },
-            { text: 'Outras informações', action: 'outras_infos' },
+            { text: 'Outras informações', action: 'outras_infos' }, // Placeholder for more services
           ];
           break;
         case 'cafe_manha':
-          botResponse.text = 'Nosso café da manhã é servido das 6h às 10h no restaurante principal. Oferecemos uma variedade de opções, incluindo frutas frescas, pães, queijos, frios, bolos, sucos naturais e café.';
+          botResponse.text = 'Nosso delicioso café da manhã é servido diariamente das 6h às 10h em nosso restaurante principal. Preparamos uma seleção variada com frutas da estação, pães fresquinhos, queijos, frios, bolos caseiros, sucos naturais, café e muito mais para você começar o dia com energia!';
           botResponse.options = [
             { text: 'Voltar aos serviços', action: 'servicos' },
             { text: 'Tenho outra dúvida', action: 'inicio' },
           ];
           break;
         case 'academia_spa':
-          botResponse.text = 'Nossa academia está disponível 24 horas para os hóspedes. O spa oferece massagens e tratamentos de beleza, mediante agendamento prévio na recepção.';
+          botResponse.text = 'Para seu bem-estar, nossa academia moderna fica à disposição dos hóspedes 24 horas por dia. Além disso, nosso Spa oferece uma gama de massagens relaxantes e tratamentos de beleza revigorantes. Lembre-se que os serviços do Spa requerem agendamento prévio na recepção.';
           botResponse.options = [
             { text: 'Voltar aos serviços', action: 'servicos' },
             { text: 'Tenho outra dúvida', action: 'inicio' },
           ];
           break;
         case 'estacionamento':
-          botResponse.text = 'Oferecemos estacionamento gratuito para todos os hóspedes, com segurança 24 horas.';
+          botResponse.text = 'Para sua comodidade e segurança, oferecemos estacionamento gratuito e coberto para todos os nossos hóspedes, com monitoramento 24 horas.';
           botResponse.options = [
             { text: 'Voltar aos serviços', action: 'servicos' },
             { text: 'Tenho outra dúvida', action: 'inicio' },
           ];
           break;
         case 'suporte':
-          botResponse.text = 'Entendi! Pode me informar qual problema está enfrentando?';
+          botResponse.text = 'Lamento que esteja enfrentando um problema. Para que eu possa te direcionar ao suporte correto ou tentar ajudar, por favor, descreva a dificuldade que está encontrando.';
           botResponse.options = [
             { text: 'O Wi-Fi não está funcionando.', action: 'wifi_problema' },
-            { text: 'Problema com TV a cabo.', action: 'tv_problema' },
-            { text: 'Ar-condicionado não liga.', action: 'ar_problema' },
-            { text: 'Outro problema.', action: 'outro_problema' },
+            { text: 'Problema com TV a cabo.', action: 'tv_problema' }, // Placeholder
+            { text: 'Ar-condicionado não liga.', action: 'ar_problema' }, // Placeholder
+            { text: 'Outro problema.', action: 'outro_problema' }, // Placeholder
           ];
           break;
         case 'wifi_problema':
-          botResponse.text = 'Vamos resolver isso! Tente desconectar e conectar novamente à rede "Hotel_Vitoria". A senha é o número do seu quarto seguido de "guest". Caso o problema persista, vou encaminhar sua solicitação para nossa equipe de suporte.';
+          botResponse.text = 'Claro, vamos tentar resolver isso! Por favor, tente se desconectar da rede "Hotel_Vitoria" e conectar novamente. A senha padrão é o número do seu quarto seguido da palavra "guest" (ex: 101guest). Se o problema continuar, me avise para que eu possa notificar nossa equipe de suporte técnico imediatamente.';
           botResponse.options = [
-            { text: 'Funcionou, obrigado!', action: 'encerrar' },
-            { text: 'Ainda não funciona', action: 'suporte_humano' },
+            { text: 'Funcionou, obrigado(a)!', action: 'encerrar' },
+            { text: 'Ainda não funciona', action: 'suporte_humano' }, // Placeholder
           ];
           break;
         case 'feedback':
-          botResponse.text = 'Adoraríamos ouvir sua opinião! Como você avalia sua experiência no nosso hotel?';
+          botResponse.text = 'Sua opinião é muito valiosa para nós! Gostaríamos muito de saber como foi sua experiência no Hotel Vitória. Como você a avaliaria?';
           botResponse.options = [
             { text: 'Excelente!', action: 'feedback_excelente' },
-            { text: 'Boa, mas poderia melhorar.', action: 'feedback_bom' },
-            { text: 'Não foi uma boa experiência.', action: 'feedback_ruim' },
+            { text: 'Boa, mas poderia melhorar.', action: 'feedback_bom' }, // Placeholder
+            { text: 'Não foi uma boa experiência.', action: 'feedback_ruim' }, // Placeholder
           ];
           break;
         case 'feedback_excelente':
-          botResponse.text = 'Que maravilha! Ficamos muito felizes em saber que sua experiência foi excelente. Obrigado pelo feedback positivo, ele é muito importante para nós! Esperamos recebê-lo novamente em breve.';
+          botResponse.text = 'Que notícia fantástica! Ficamos imensamente felizes em saber que sua experiência conosco foi excelente. Seu feedback positivo é um grande incentivo para toda nossa equipe. Muito obrigado por compartilhar e esperamos ter o prazer de recebê-lo novamente em breve!';
           botResponse.options = [
             { text: 'Tenho outra dúvida', action: 'inicio' },
             { text: 'Encerrar conversa', action: 'encerrar' },
           ];
           break;
         case 'encerrar':
-          botResponse.text = 'Obrigado por falar comigo! Se precisar de mais alguma coisa, é só chamar. Tenha um ótimo dia! 😊';
+          botResponse.text = 'Foi um prazer ajudar! Agradeço por conversar comigo. Se precisar de qualquer outra assistência no futuro, estou à disposição. Tenha um excelente dia e aproveite sua estadia (ou futura estadia) no Hotel Vitória! 😊';
           botResponse.options = [
             { text: 'Iniciar nova conversa', action: 'inicio' },
           ];
           break;
         case 'inicio':
-          // Retorna ao menu inicial
           botResponse = {
-            id: (Date.now() + 1).toString(),
-            text: 'Como posso te ajudar hoje?',
-            isBot: true,
-            timestamp: new Date(),
-            options: initialMessages[0].options,
+            ...initialMessages[0], // Use the full initial message object structure
+            id: (Date.now() + 1).toString(), // New ID
+            timestamp: new Date(), // New timestamp
+            text: 'Estou à disposição! Como posso te ajudar agora?', // More natural re-greeting
           };
           break;
         default:
-          botResponse.text = 'Desculpe, não entendi sua solicitação. Como posso te ajudar?';
-          botResponse.options = initialMessages[0].options;
+          botResponse.text = 'Peço desculpas, mas não consegui compreender sua solicitação. Para que eu possa te ajudar melhor, você poderia escolher uma das opções abaixo ou tentar reformular sua pergunta?';
+          botResponse.options = initialMessages[0].options ? [...initialMessages[0].options] : [];
       }
 
       setMessages((prev) => [...prev, botResponse]);
@@ -233,26 +252,24 @@ const ChatBot: React.FC = () => {
     setInputValue('');
     setIsLoading(true);
 
-    // Simulate response based on keywords
     setTimeout(() => {
-      // Default response if no keywords match
-      let botResponse = "Desculpe, não entendi completamente sua pergunta. Você pode escolher uma das opções abaixo para que eu possa te ajudar melhor.";
-      let options: ChatOption[] = initialMessages[0].options || [];
+      let botResponseText = "Hmm, não tenho certeza se entendi sua pergunta. Para garantir que eu possa te ajudar da melhor forma, que tal escolher uma das opções abaixo? Elas cobrem os pedidos mais comuns de nossos hóspedes.";
+      let responseOptions: ChatOption[] = initialMessages[0].options || [];
       
       const keywords = {
-        reserva: ['reserva', 'reservar', 'quarto', 'agendar', 'marcar'],
-        duvida: ['dúvida', 'duvida', 'reserva existente', 'confirmação'],
-        servicos: ['serviço', 'servico', 'wifi', 'café', 'restaurante', 'spa'],
-        suporte: ['problema', 'não funciona', 'quebrado', 'suporte', 'ajuda técnica'],
-        feedback: ['feedback', 'opinião', 'avaliação', 'comentário', 'sugestão']
+        reserva: ['reserva', 'reservar', 'quarto', 'agendar', 'marcar', 'hospedagem'],
+        duvida: ['dúvida', 'duvida', 'minha reserva', 'confirmação', 'alterar reserva', 'cancelar reserva'],
+        servicos: ['serviço', 'servico', 'wifi', 'café', 'restaurante', 'spa', 'academia', 'estacionamento'],
+        suporte: ['problema', 'não funciona', 'quebrado', 'suporte', 'ajuda técnica', 'dificuldade'],
+        feedback: ['feedback', 'opinião', 'avaliação', 'comentário', 'sugestão', 'elogio', 'reclamação']
       };
       
-      // Check for keywords in user message
       const lowerCaseMessage = userMessage.text.toLowerCase();
       
+      // Prioritize keyword actions if matched
       if (keywords.reserva.some(word => lowerCaseMessage.includes(word))) {
         handleOptionClick('reserva');
-        return;
+        return; 
       } else if (keywords.duvida.some(word => lowerCaseMessage.includes(word))) {
         handleOptionClick('duvida_reserva');
         return;
@@ -269,10 +286,10 @@ const ChatBot: React.FC = () => {
 
       const newBotMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: botResponse,
+        text: botResponseText,
         isBot: true,
         timestamp: new Date(),
-        options: options
+        options: responseOptions
       };
 
       setMessages((prev) => [...prev, newBotMessage]);
@@ -349,7 +366,7 @@ const ChatBot: React.FC = () => {
                       : "bg-hotel-800 text-white rounded-br-none"
                   )}
                 >
-                  <p className="text-sm">{message.text}</p>
+                  <p className="text-sm whitespace-pre-wrap">{message.text}</p>
                   <p className="text-[10px] mt-1 opacity-60">
                     {new Intl.DateTimeFormat('pt-BR', {
                       hour: '2-digit',
@@ -361,7 +378,7 @@ const ChatBot: React.FC = () => {
             ))}
 
             {/* Options buttons */}
-            {messages.length > 0 && messages[messages.length - 1].options && messages[messages.length - 1].options!.length > 0 && (
+            {messages.length > 0 && messages[messages.length - 1].isBot && messages[messages.length - 1].options && messages[messages.length - 1].options!.length > 0 && !isLoading && (
               <div className="flex flex-col space-y-2 mt-4">
                 {messages[messages.length - 1].options!.map((option, index) => (
                   <button
@@ -403,6 +420,7 @@ const ChatBot: React.FC = () => {
               placeholder="Digite sua mensagem..."
               className="flex-1 p-3 rounded-l-lg border-y border-l border-hotel-200 dark:border-hotel-700 focus:outline-none focus:ring-1 focus:ring-hotel-500 bg-white dark:bg-hotel-900 dark:text-hotel-100 resize-none overflow-hidden max-h-[120px]"
               rows={1}
+              style={{ fieldSizing: 'content' }} // For auto-expanding textarea if supported
             />
             <Button
               onClick={sendMessage}
